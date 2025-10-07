@@ -4,13 +4,14 @@ A NestJS-based microservice for managing orders in a microservices architecture.
 
 ## Features
 
-- **Order Management**: Create, retrieve, and update orders
+- **Order Management**: Create, retrieve, and update orders with order items
 - **Status Management**: Change order status (PENDING, DELIVERED, CANCELLED)
 - **Database Integration**: PostgreSQL with Prisma ORM
 - **Microservice Architecture**: TCP-based communication using NestJS microservices
 - **Data Validation**: Input validation with class-validator
-- **Pagination**: Support for paginated order queries
+- **Pagination**: Support for paginated order queries with status filtering
 - **Type Safety**: Full TypeScript support
+- **Service Integration**: Communicates with Products microservice
 
 ## Installation
 
@@ -94,14 +95,31 @@ src/
 ├── app.module.ts          # Main application module
 ├── main.ts               # Application entry point
 ├── common/               # Shared DTOs and utilities
+│   ├── index.ts
 │   └── dto/
+│       └── pagination.dto.ts
 ├── config/               # Configuration files
 │   ├── envs.ts          # Environment variables
+│   ├── services.ts      # Service constants
 │   └── index.ts
 └── orders/               # Orders module
     ├── orders.controller.ts
     ├── orders.service.ts
     ├── orders.module.ts
     ├── dto/              # Order-specific DTOs
+    │   ├── create-order.dto.ts
+    │   ├── change-order-status.dto.ts
+    │   ├── order-item.dto.ts
+    │   ├── order-pagination.dto.ts
+    │   └── index.ts
     └── enum/             # Order enums
+        └── order.enum.ts
 ```
+
+## Service Dependencies
+
+This microservice integrates with other services in the microservices architecture:
+
+- **Products Microservice**: Validates product information when creating orders
+  - Host: `PRODUCTS_MS_HOST` (environment variable)
+  - Port: `PRODUCTS_MS_PORT` (environment variable)
