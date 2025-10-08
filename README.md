@@ -1,17 +1,18 @@
 # Orders Microservice
 
-A NestJS-based microservice for managing orders in a microservices architecture. This service provides order management functionality with PostgreSQL database integration and TCP communication.
+A NestJS-based microservice for managing orders in a microservices architecture. This service provides order management functionality with PostgreSQL database integration and NATS messaging system.
 
 ## Features
 
 - **Order Management**: Create, retrieve, and update orders with order items
 - **Status Management**: Change order status (PENDING, DELIVERED, CANCELLED)
 - **Database Integration**: PostgreSQL with Prisma ORM
-- **Microservice Architecture**: TCP-based communication using NestJS microservices
+- **Microservice Architecture**: NATS-based communication using NestJS microservices
 - **Data Validation**: Input validation with class-validator
 - **Pagination**: Support for paginated order queries with status filtering
 - **Type Safety**: Full TypeScript support
-- **Service Integration**: Communicates with Products microservice
+- **Service Integration**: Communicates with Products microservice via NATS
+- **Product Validation**: Validates product availability and pricing before order creation
 
 ## Installation
 
@@ -102,24 +103,29 @@ src/
 │   ├── envs.ts          # Environment variables
 │   ├── services.ts      # Service constants
 │   └── index.ts
-└── orders/               # Orders module
-    ├── orders.controller.ts
-    ├── orders.service.ts
-    ├── orders.module.ts
-    ├── dto/              # Order-specific DTOs
-    │   ├── create-order.dto.ts
-    │   ├── change-order-status.dto.ts
-    │   ├── order-item.dto.ts
-    │   ├── order-pagination.dto.ts
-    │   └── index.ts
-    └── enum/             # Order enums
-        └── order.enum.ts
+├── orders/               # Orders module
+│   ├── orders.controller.ts
+│   ├── orders.service.ts
+│   ├── orders.module.ts
+│   ├── dto/              # Order-specific DTOs
+│   │   ├── create-order.dto.ts
+│   │   ├── change-order-status.dto.ts
+│   │   ├── order-item.dto.ts
+│   │   ├── order-pagination.dto.ts
+│   │   └── index.ts
+│   └── enum/             # Order enums
+│       └── order.enum.ts
+└── transports/           # Transport layer configuration
+    └── nats.module.ts    # NATS client configuration
 ```
 
 ## Service Dependencies
 
 This microservice integrates with other services in the microservices architecture:
 
-- **Products Microservice**: Validates product information when creating orders
-  - Host: `PRODUCTS_MS_HOST` (environment variable)
-  - Port: `PRODUCTS_MS_PORT` (environment variable)
+- **Products Microservice**: Validates product information and pricing when creating orders
+  - Communication: NATS messaging system
+  - Message Pattern: `validate_products`
+  - Purpose: Ensures product availability and retrieves current pricing
+
+**Note**: This microservice is designed to work with other services in a distributed architecture using NATS as the message broker. Ensure proper NATS configuration and service discovery setup in your deployment environment.
