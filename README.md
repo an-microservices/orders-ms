@@ -1,18 +1,20 @@
 # Orders Microservice
 
-A NestJS-based microservice for managing orders in a microservices architecture. This service provides order management functionality with PostgreSQL database integration and NATS messaging system.
+A NestJS-based microservice for managing orders in a microservices architecture. This service provides order management functionality with PostgreSQL database integration, NATS messaging system, and Stripe payment integration.
 
 ## Features
 
 - **Order Management**: Create, retrieve, and update orders with order items
-- **Status Management**: Change order status (PENDING, DELIVERED, CANCELLED)
+- **Payment Integration**: Stripe payment session creation and webhook handling
+- **Status Management**: Change order status (PENDING, PAID, DELIVERED, CANCELLED)
 - **Database Integration**: PostgreSQL with Prisma ORM
 - **Microservice Architecture**: NATS-based communication using NestJS microservices
 - **Data Validation**: Input validation with class-validator
 - **Pagination**: Support for paginated order queries with status filtering
 - **Type Safety**: Full TypeScript support
-- **Service Integration**: Communicates with Products microservice via NATS
+- **Service Integration**: Communicates with Products and Payments microservices via NATS
 - **Product Validation**: Validates product availability and pricing before order creation
+- **Payment Event Handling**: Listens to payment success events and updates order status automatically
 
 ## Installation
 
@@ -65,28 +67,35 @@ npm run start:debug
 
 ## Database
 
-The service uses PostgreSQL as the primary database with the following schema:
+The service uses PostgreSQL as the primary database with Prisma ORM. The database schema includes:
 
-## Docker
+## Payment Integration
 
-The project includes a Docker Compose configuration for the PostgreSQL database:
+The service integrates with Stripe for payment processing:
 
-```yaml
-services:
-  orders-db:
-    container_name: orders_database
-    image: postgres:17
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=ordersdb
+1. **Order Creation**: When an order is created, a Stripe payment session is automatically generated
+2. **Payment Session**: Returns Stripe checkout URL for customer payment
+3. **Webhook Events**: Listens to `payment.succeeded` events from the Payments microservice
+4. **Auto-Update**: Automatically updates order status to PAID when payment succeeds
+5. **Payment Tracking**: Stores Stripe charge ID and payment timestamp
+
+### Payment Flow
 ```
-
-To start the database:
-```bash
-docker compose up -d
+Client → Create Order → Orders MS
+                    ↓
+              Products MS (validate)
+                    ↓
+              Payments MS (create session)
+                    ↓
+              Stripe Checkout URL
+                    ↓
+        Customer completes payment
+                    ↓
+              Stripe Webhook
+                    ↓
+              Payments MS
+                    ↓
+       Orders MS (update to PAID)
 ```
 
 ## Project Structure
@@ -127,5 +136,11 @@ This microservice integrates with other services in the microservices architectu
   - Communication: NATS messaging system
   - Message Pattern: `validate_products`
   - Purpose: Ensures product availability and retrieves current pricing
+
+- **Payments Microservice**: Handles Stripe payment session creation and webhook processing
+  - Communication: NATS messaging system
+  - Message Pattern: `create.payment.session`
+  - Event Pattern: `payment.succeeded` (listens for payment confirmations)
+  - Purpose: Creates Stripe checkout sessions and notifies when payments succeed
 
 **Note**: This microservice is designed to work with other services in a distributed architecture using NATS as the message broker. Ensure proper NATS configuration and service discovery setup in your deployment environment.
