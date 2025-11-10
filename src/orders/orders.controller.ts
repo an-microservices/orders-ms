@@ -13,7 +13,7 @@ import {
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @MessagePattern({ cmd: 'create_order' })
+  @MessagePattern('orders.create')
   async create(@Payload() createOrderDto: CreateOrderDto) {
     const order = await this.ordersService.create(createOrderDto);
     const paymentSession = await this.ordersService.createPaymentSession(order);
@@ -24,17 +24,17 @@ export class OrdersController {
     };
   }
 
-  @MessagePattern({ cmd: 'find_all_orders' })
+  @MessagePattern('orders.find.all')
   findAll(@Payload() orderPaginationDto: OrderPaginationDto) {
     return this.ordersService.findAll(orderPaginationDto);
   }
 
-  @MessagePattern({ cmd: 'find_one_order' })
+  @MessagePattern('orders.find.one')
   findOne(@Payload('id', ParseUUIDPipe) id: string) {
     return this.ordersService.findOne(id);
   }
 
-  @MessagePattern({ cmd: 'change_order_status' })
+  @MessagePattern('orders.change.status')
   changeOrderStatus(@Payload() changeOrderStatusDto: ChangeOrderStatusDto) {
     return this.ordersService.changeStatus(changeOrderStatusDto);
   }
