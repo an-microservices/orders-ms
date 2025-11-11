@@ -144,3 +144,45 @@ This microservice integrates with other services in the microservices architectu
   - Purpose: Creates Stripe checkout sessions and notifies when payments succeed
 
 **Note**: This microservice is designed to work with other services in a distributed architecture using NATS as the message broker. Ensure proper NATS configuration and service discovery setup in your deployment environment.
+
+## Useful Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev
+
+# Start in development mode
+npm run start:dev
+
+# Build for production
+npm run build
+
+# Start production build
+npm run start:prod
+
+# Open Prisma Studio
+npx prisma studio
+
+# Build Docker image (production)
+docker build -f dockerfile.prod -t orders-ms:prod .
+
+# Run Docker container
+docker run -p 3002:3002 --env-file .env orders-ms:prod
+```
+
+## Docker
+
+### Development Dockerfile
+- Hot reload enabled with volume mounts
+- Prisma migrations run on startup
+
+### Production Dockerfile (dockerfile.prod)
+- Multi-stage build for smaller image size
+- Production dependencies only
+- Runs compiled JavaScript
